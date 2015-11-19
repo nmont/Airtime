@@ -18,6 +18,7 @@ import com.badlogic.gdx.utils.TimeUtils;
 
 public class GameScreen implements Screen {
     final Drop game;
+    final int LOW = 1;
 
     Texture dropImage;
     Texture bucketImage;
@@ -25,14 +26,18 @@ public class GameScreen implements Screen {
 //    Music rainMusic;
     OrthographicCamera camera;
     Rectangle bucket;
-    Array<Rectangle> raindrops;
+    Array<Raindrop> raindrops;
     long lastDropTime;
     int dropsGathered;
+    int points_dropped;
 
     public GameScreen(final Drop gam) {
         this.game = gam;
 
         // load the images for the droplet and the bucket, 64x64 pixels each
+
+        //TODO
+        // change images to platform and balloon
         dropImage = new Texture(Gdx.files.internal("droplet.png"));
         bucketImage = new Texture(Gdx.files.internal("bucket.png"));
 
@@ -54,18 +59,24 @@ public class GameScreen implements Screen {
         bucket.height = 64;
 
         // create the raindrops array and spawn the first raindrop
-        raindrops = new Array<Rectangle>();
-        spawnRaindrop();
+        raindrops = new Array<Raindrop>();
 
+        points_dropped = 0;
+        spawnRaindrop();
     }
 
     private void spawnRaindrop() {
         Rectangle raindrop = new Rectangle();
+        boolean isHit = false;
         raindrop.x = MathUtils.random(0, 800 - 64);
         raindrop.y = 480;
         raindrop.width = 64;
         raindrop.height = 64;
-        raindrops.add(raindrop);
+
+        //Make Raindrop object
+        Raindrop r = new Raindrop(raindrop, isHit);
+
+        raindrops.add(r);
         lastDropTime = TimeUtils.nanoTime();
     }
 
@@ -89,11 +100,13 @@ public class GameScreen implements Screen {
         // all drops
         game.batch.begin();
         game.font.draw(game.batch, "Drops Collected: " + dropsGathered, 0, 480);
+        game.font.draw(game.batch, "Drops Missed: " + points_dropped, 200, 480);
         game.batch.draw(bucketImage, bucket.x, bucket.y);
-        for (Rectangle raindrop : raindrops) {
-            game.batch.draw(dropImage, raindrop.x, raindrop.y);
+        for (Raindrop raindrop : raindrops) {
+            game.batch.draw(dropImage, raindrop.getRectangle().x, raindrop.getRectangle().y);
         }
         game.batch.end();
+
 
         // process user input
         if (Gdx.input.isTouched()) {
@@ -101,7 +114,9 @@ public class GameScreen implements Screen {
             touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPos);
             bucket.x = touchPos.x - 64 / 2;
+            bucket.y = touchPos.y - 64 / 2;
         }
+
         if (Gdx.input.isKeyPressed(Keys.LEFT))
             bucket.x -= 200 * Gdx.graphics.getDeltaTime();
         if (Gdx.input.isKeyPressed(Keys.RIGHT))
@@ -120,17 +135,27 @@ public class GameScreen implements Screen {
         // move the raindrops, remove any that are beneath the bottom edge of
         // the screen or that hit the bucket. In the later case we play back
         // a sound effect as well.
-        Iterator<Rectangle> iter = raindrops.iterator();
+        Iterator<Raindrop> iter = raindrops.iterator();
         while (iter.hasNext()) {
-            Rectangle raindrop = iter.next();
-            raindrop.y -= 200 * Gdx.graphics.getDeltaTime();
-            if (raindrop.y + 64 < 0)
+            Raindrop raindrop = iter.next();
+            raindrop.update();
+            // Move raindrop down if not hit
+            if(!raindrop.isHit) raindrop.getRectangle().y -= 200 * Gdx.graphics.getDeltaTime();
+            else raindrop.getRectangle().y += 200 * Gdx.graphics.getDeltaTime();
+
+            // if raindrop gets to bottom of screen
+            if (raindrop.getRectangle().y + 64 < 0) {
                 iter.remove();
-            if (raindrop.overlaps(bucket)) {
+                points_dropped++;
+                if(points_dropped >= LOW) game.setScreen(new GameOverScreen(game));
+            }
+
+            if (raindrop.getRectangle().overlaps(bucket) && !raindrop.getIsHit() ) {
                 dropsGathered++;
+                raindrop.setIsHit(true);
                 //TODO play music
 //                dropSound.play();
-                iter.remove();
+
             }
         }
     }

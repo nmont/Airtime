@@ -5,7 +5,6 @@ import java.util.Iterator;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -20,16 +19,19 @@ public class GameScreen implements Screen {
     final Drop game;
     final int LOW = 1;
 
-    Texture dropImage;
-    Texture bucketImage;
-//    Sound dropSound;
+    Texture ball1;
+    Texture ball2;
+    Texture ball3;
+    Sound hitSound;
 //    Music rainMusic;
+
     OrthographicCamera camera;
     Rectangle bucket;
     Array<Raindrop> raindrops;
     long lastDropTime;
     int dropsGathered;
     int points_dropped;
+    int speed;
 
     public GameScreen(final Drop gam) {
         this.game = gam;
@@ -38,11 +40,12 @@ public class GameScreen implements Screen {
 
         //TODO
         // change images to platform and balloon
-        dropImage = new Texture(Gdx.files.internal("droplet.png"));
-        bucketImage = new Texture(Gdx.files.internal("bucket.png"));
+        ball1 = new Texture(Gdx.files.internal("ball.png"));
+        ball2 = new Texture(Gdx.files.internal("ball2.png"));
+        ball3 = new Texture(Gdx.files.internal("ball3.png"));
 
         // load the drop sound effect and the rain background "music"
-//        dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.wav"));
+        hitSound = Gdx.audio.newSound(Gdx.files.internal("blip.mp3"));
 //        rainMusic = Gdx.audio.newMusic(Gdx.files.internal("rain.mp3"));
 //        rainMusic.setLooping(true);
 
@@ -62,6 +65,8 @@ public class GameScreen implements Screen {
         raindrops = new Array<Raindrop>();
 
         points_dropped = 0;
+        speed = 1;
+
         spawnRaindrop();
     }
 
@@ -101,9 +106,11 @@ public class GameScreen implements Screen {
         game.batch.begin();
         game.font.draw(game.batch, "Drops Collected: " + dropsGathered, 0, 480);
         game.font.draw(game.batch, "Drops Missed: " + points_dropped, 200, 480);
-        game.batch.draw(bucketImage, bucket.x, bucket.y);
         for (Raindrop raindrop : raindrops) {
-            game.batch.draw(dropImage, raindrop.getRectangle().x, raindrop.getRectangle().y);
+            if(raindrop.getTimesHit() == 0)game.batch.draw(ball1, raindrop.getRectangle().x, raindrop.getRectangle().y);
+            else if(raindrop.getTimesHit() == 1)game.batch.draw(ball2, raindrop.getRectangle().x, raindrop.getRectangle().y);
+            else game.batch.draw(ball3, raindrop.getRectangle().x, raindrop.getRectangle().y);
+
         }
         game.batch.end();
 
@@ -140,8 +147,8 @@ public class GameScreen implements Screen {
             Raindrop raindrop = iter.next();
             raindrop.update();
             // Move raindrop down if not hit
-            if(!raindrop.isHit) raindrop.getRectangle().y -= 200 * Gdx.graphics.getDeltaTime();
-            else raindrop.getRectangle().y += 200 * Gdx.graphics.getDeltaTime();
+            if(!raindrop.isHit) raindrop.getRectangle().y -= speed * Gdx.graphics.getDeltaTime();
+            else raindrop.getRectangle().y += speed * Gdx.graphics.getDeltaTime();
 
             // if raindrop gets to bottom of screen
             if (raindrop.getRectangle().y + 64 < 0) {
@@ -150,13 +157,20 @@ public class GameScreen implements Screen {
                 if(points_dropped >= LOW) game.setScreen(new GameOverScreen(game, dropsGathered));
             }
 
+            // if raindrop hits the top of the screen
+            if ((raindrop.getRectangle().y - 64 > 480) && (raindrop.isHit)) {
+                raindrop.setIsHit(false);
+            }
+
             if (raindrop.getRectangle().overlaps(bucket) && !raindrop.getIsHit() ) {
+                if(raindrop.getTimesHit() >= 2) iter.remove();
                 dropsGathered++;
                 raindrop.setIsHit(true);
-                //TODO play music
-//                dropSound.play();
-
+                hitSound.play();
             }
+
+            speed = (1 * dropsGathered) + 100;
+
         }
     }
 
@@ -185,9 +199,8 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
-        dropImage.dispose();
-        bucketImage.dispose();
-//        dropSound.dispose();
+        ball1.dispose();
+        hitSound.dispose();
 //        rainMusic.dispose();
     }
 

@@ -8,10 +8,11 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 public class GameOverScreen implements Screen {
     final Drop game;
     OrthographicCamera camera;
+    final int points;
 
-    public GameOverScreen(final Drop gam) {
+    public GameOverScreen(final Drop gam, final int dropsGathered) {
         game = gam;
-
+        points = dropsGathered;
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 800, 480);
 
@@ -31,7 +32,7 @@ public class GameOverScreen implements Screen {
         game.batch.end();
 
         if (Gdx.input.isTouched()) {
-            GameOverInputListener listener = new GameOverInputListener();
+            GameOverInputListener listener = new GameOverInputListener(points);
             Gdx.input.getTextInput(listener, "Game Over", "hint", "");
             game.setScreen(new MainMenuScreen(game));
             dispose();

@@ -147,7 +147,7 @@ public class GameScreen implements Screen {
             if (raindrop.getRectangle().y + 64 < 0) {
                 iter.remove();
                 points_dropped++;
-                if(points_dropped >= LOW) game.setScreen(new GameOverScreen(game));
+                if(points_dropped >= LOW) game.setScreen(new GameOverScreen(game, dropsGathered));
             }
 
             if (raindrop.getRectangle().overlaps(bucket) && !raindrop.getIsHit() ) {

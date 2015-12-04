@@ -33,7 +33,7 @@ public class GameOverScreen implements Screen {
 
         if (Gdx.input.isTouched()) {
             GameOverInputListener listener = new GameOverInputListener(points);
-            Gdx.input.getTextInput(listener, "Game Over", "hint", "");
+            Gdx.input.getTextInput(listener, "Score: " + points, "Enter Name", "");
             game.setScreen(new MainMenuScreen(game));
             dispose();
         }

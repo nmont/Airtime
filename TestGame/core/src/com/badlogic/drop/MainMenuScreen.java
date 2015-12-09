@@ -37,7 +37,7 @@ public class MainMenuScreen implements Screen {
         game.batch.setProjectionMatrix(camera.combined);
 
         game.batch.begin();
-        game.font.draw(game.batch, "Welcome to Drop!!! ", 100, 150);
+        game.font.draw(game.batch, "Welcome to Airtime! ", 100, 150);
         game.font.draw(game.batch, "Tap here to begin!", 100, 100);
         game.font.draw(game.batch, "Tap here for high scores", 100,50);
 

@@ -122,12 +122,22 @@ public class GameScreen implements Screen {
             Gdx.gl.glClearColor(0.1f, 0.2f, 0, 1);
             Gdx.gl.glClear(GL30.GL_COLOR_BUFFER_BIT);
         }
-//        else if(level == 5) {
-        else {
+        else if(level == 5) {
             Gdx.gl.glClearColor(0.3f, 0.2f, 0, 1);
             Gdx.gl.glClear(GL30.GL_COLOR_BUFFER_BIT);
         }
-
+        else if(level == 6) {
+            Gdx.gl.glClearColor(0.5f, 0.1f, 0.1f, 1);
+            Gdx.gl.glClear(GL30.GL_COLOR_BUFFER_BIT);
+        }
+        else if(level == 7) {
+            Gdx.gl.glClearColor(0.9f, 0.1f, 0, 1);
+            Gdx.gl.glClear(GL30.GL_COLOR_BUFFER_BIT);
+        }
+        else {
+            Gdx.gl.glClearColor(1.0f, 0, 0, 1);
+            Gdx.gl.glClear(GL30.GL_COLOR_BUFFER_BIT);
+        }
 
         // tell the camera to update its matrices.
         camera.update();
@@ -139,8 +149,7 @@ public class GameScreen implements Screen {
         // begin a new batch and draw the bucket and
         // all drops
         game.batch.begin();
-        game.font.draw(game.batch, "Drops Collected: " + dropsGathered, 0, 480);
-        game.font.draw(game.batch, "Drops Missed: " + points_dropped, 200, 480);
+        game.font.draw(game.batch, "Score: " + dropsGathered, 200, 480);
         for (Raindrop raindrop : raindrops) {
             if(raindrop.getTimesHit() == 0)game.batch.draw(ball1, raindrop.getRectangle().x, raindrop.getRectangle().y);
             else if(raindrop.getTimesHit() == 1)game.batch.draw(ball2, raindrop.getRectangle().x, raindrop.getRectangle().y);
@@ -171,7 +180,7 @@ public class GameScreen implements Screen {
         if (TimeUtils.nanoTime() - lastDropTime > 1000000000) {
             timer ++;
         }
-        if (timer >= 30 / level) {
+        if ((timer >= 30 / level) || (level > 10)) {
             spawnRaindrop();
             timer = 0;
         }

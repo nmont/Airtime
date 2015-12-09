@@ -24,6 +24,7 @@ public class GameScreen implements Screen {
     Texture ball2;
     Texture ball3;
     Sound hitSound;
+    Sound gameOverSound;
 //    Music rainMusic;
 
     OrthographicCamera camera;
@@ -33,13 +34,15 @@ public class GameScreen implements Screen {
     int dropsGathered;
     int points_dropped;
     int speed;
-    GameOverInputListener listener;
-    //TODO: Implment the level variable correctly
+    int timer;
     int level;
+
+    float x_loc;
+    float y_loc;
+    boolean is_touched;
 
     public GameScreen(final Drop gam) {
         this.game = gam;
-        listener = new GameOverInputListener(gam);
 
         // load the images for the droplet and the bucket, 64x64 pixels each
 
@@ -51,6 +54,7 @@ public class GameScreen implements Screen {
 
         // load the drop sound effect and the rain background "music"
         hitSound = Gdx.audio.newSound(Gdx.files.internal("blip.mp3"));
+        gameOverSound = Gdx.audio.newSound(Gdx.files.internal("gameover.mp3"));
 //        rainMusic = Gdx.audio.newMusic(Gdx.files.internal("rain.mp3"));
 //        rainMusic.setLooping(true);
 
@@ -71,8 +75,13 @@ public class GameScreen implements Screen {
 
         points_dropped = 0;
         speed = 1;
-        //initial level is 1
+
+        timer = 0;
         level = 1;
+
+        x_loc = 0;
+        y_loc = 0;
+        is_touched = false;
 
         spawnRaindrop();
     }
@@ -87,7 +96,6 @@ public class GameScreen implements Screen {
 
         //Make Raindrop object
         Raindrop r = new Raindrop(raindrop, isHit);
-
         raindrops.add(r);
         lastDropTime = TimeUtils.nanoTime();
     }
@@ -98,8 +106,28 @@ public class GameScreen implements Screen {
         // arguments to glClearColor are the red, green
         // blue and alpha component in the range [0,1]
         // of the color to be used to clear the screen.
-        Gdx.gl.glClearColor(0, 0, 0.2f, 1);
-        Gdx.gl.glClear(GL30.GL_COLOR_BUFFER_BIT);
+        if(level == 1){
+            Gdx.gl.glClearColor(0, 0, 0.2f, 1);
+            Gdx.gl.glClear(GL30.GL_COLOR_BUFFER_BIT);
+        }
+        else if(level == 2) {
+            Gdx.gl.glClearColor(0, 0.1f, 0.2f, 1);
+            Gdx.gl.glClear(GL30.GL_COLOR_BUFFER_BIT);
+        }
+        else if(level == 3) {
+            Gdx.gl.glClearColor(0, 0.3f, 0.2f, 1);
+            Gdx.gl.glClear(GL30.GL_COLOR_BUFFER_BIT);
+        }
+        else if(level == 4) {
+            Gdx.gl.glClearColor(0.1f, 0.2f, 0, 1);
+            Gdx.gl.glClear(GL30.GL_COLOR_BUFFER_BIT);
+        }
+//        else if(level == 5) {
+        else {
+            Gdx.gl.glClearColor(0.3f, 0.2f, 0, 1);
+            Gdx.gl.glClear(GL30.GL_COLOR_BUFFER_BIT);
+        }
+
 
         // tell the camera to update its matrices.
         camera.update();
@@ -117,34 +145,36 @@ public class GameScreen implements Screen {
             if(raindrop.getTimesHit() == 0)game.batch.draw(ball1, raindrop.getRectangle().x, raindrop.getRectangle().y);
             else if(raindrop.getTimesHit() == 1)game.batch.draw(ball2, raindrop.getRectangle().x, raindrop.getRectangle().y);
             else game.batch.draw(ball3, raindrop.getRectangle().x, raindrop.getRectangle().y);
-
         }
         game.batch.end();
-
 
         // process user input
         if (Gdx.input.isTouched()) {
             Vector3 touchPos = new Vector3();
             touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPos);
-            bucket.x = touchPos.x - 64 / 2;
-            bucket.y = touchPos.y - 64 / 2;
+            is_touched = true;
+            x_loc = touchPos.x - 64 / 2;
+            y_loc = touchPos.y - 64 / 2;
+            bucket.x = x_loc;
+            bucket.y = y_loc;
         }
-
-        if (Gdx.input.isKeyPressed(Keys.LEFT))
-            bucket.x -= 200 * Gdx.graphics.getDeltaTime();
-        if (Gdx.input.isKeyPressed(Keys.RIGHT))
-            bucket.x += 200 * Gdx.graphics.getDeltaTime();
-
-        // make sure the bucket stays within the screen bounds
+        else {
+            is_touched = false;
+        }
         if (bucket.x < 0)
             bucket.x = 0;
         if (bucket.x > 800 - 64)
             bucket.x = 800 - 64;
 
         // check if we need to create a new raindrop
-        if (TimeUtils.nanoTime() - lastDropTime > 1000000000)
+        if (TimeUtils.nanoTime() - lastDropTime > 1000000000) {
+            timer ++;
+        }
+        if (timer >= 30 / level) {
             spawnRaindrop();
+            timer = 0;
+        }
 
         // move the raindrops, remove any that are beneath the bottom edge of
         // the screen or that hit the bucket. In the later case we play back
@@ -154,14 +184,16 @@ public class GameScreen implements Screen {
             Raindrop raindrop = iter.next();
             raindrop.update();
             // Move raindrop down if not hit
-            if(!raindrop.isHit) raindrop.getRectangle().y -= speed * Gdx.graphics.getDeltaTime();
-            else raindrop.getRectangle().y += speed * Gdx.graphics.getDeltaTime();
+            if(!raindrop.isHit) raindrop.getRectangle().y -= speed * Gdx.graphics.getDeltaTime() - raindrop.getVelocity();
+            else raindrop.getRectangle().y += speed * Gdx.graphics.getDeltaTime() + raindrop.getVelocity();
 
             // if raindrop gets to bottom of screen
             if (raindrop.getRectangle().y + 64 < 0) {
                 iter.remove();
                 points_dropped++;
+
                 if(points_dropped >= LOW) {
+                    gameOverSound.play();
                     game.getPreferences().putHighScoreAvail(true);
                     game.getPreferences().putCurLevel(level);
                     game.getPreferences().putCurScore(dropsGathered);
@@ -178,6 +210,7 @@ public class GameScreen implements Screen {
                     }, "Score: " + dropsGathered, "Enter Name", "");
                     game.setScreen(new GameOverScreen(game));
                 }
+
             }
 
             // if raindrop hits the top of the screen
@@ -185,9 +218,10 @@ public class GameScreen implements Screen {
                 raindrop.setIsHit(false);
             }
 
-            if (raindrop.getRectangle().overlaps(bucket) && !raindrop.getIsHit() ) {
+            if (is_touched && raindrop.getRectangle().overlaps(bucket) && raindrop.getIsHittable() ) {
                 if(raindrop.getTimesHit() >= 2) iter.remove();
                 dropsGathered++;
+                if(dropsGathered % 10 == 0) level++;
                 raindrop.setIsHit(true);
                 hitSound.play();
             }

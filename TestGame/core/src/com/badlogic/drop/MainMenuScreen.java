@@ -15,6 +15,7 @@ public class MainMenuScreen implements Screen {
     OrthographicCamera camera;
     Rectangle playBounds;
     Vector3 touchPoint;
+    Rectangle highScoreBounds;
 
     public MainMenuScreen(final Drop gam) {
         game = gam;
@@ -22,7 +23,8 @@ public class MainMenuScreen implements Screen {
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 800, 480);
         touchPoint = new Vector3();
-        playBounds = new Rectangle(100, 75, 150, 36);
+        playBounds = new Rectangle(90, 75, 150, 36);
+        highScoreBounds = new Rectangle(90,25,185,36);
 
     }
 
@@ -37,11 +39,13 @@ public class MainMenuScreen implements Screen {
         game.batch.begin();
         game.font.draw(game.batch, "Welcome to Drop!!! ", 100, 150);
         game.font.draw(game.batch, "Tap here to begin!", 100, 100);
+        game.font.draw(game.batch, "Tap here for high scores", 100,50);
 
         ShapeRenderer renderer = new ShapeRenderer();
         renderer.setProjectionMatrix(camera.combined);
         renderer.begin(ShapeRenderer.ShapeType.Line);
         renderer.rect(playBounds.x, playBounds.y, playBounds.width, playBounds.height);
+        renderer.rect(highScoreBounds.x, highScoreBounds.y, highScoreBounds.width, highScoreBounds.height);
 
         game.batch.end();
 
@@ -53,6 +57,10 @@ public class MainMenuScreen implements Screen {
             if (playBounds.contains(touchPoint.x, touchPoint.y)) {
                 //Assets.playSound(Assets.clickSound);
                 game.setScreen(new GameScreen(game));
+                dispose();
+            }
+            else if (highScoreBounds.contains(touchPoint.x, touchPoint.y)) {
+                game.setScreen(new HighScoreScreen(game));
                 dispose();
             }
 

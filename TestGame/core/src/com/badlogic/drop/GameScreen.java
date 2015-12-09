@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.Input.TextInputListener;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL30;
@@ -32,9 +33,13 @@ public class GameScreen implements Screen {
     int dropsGathered;
     int points_dropped;
     int speed;
+    GameOverInputListener listener;
+    //TODO: Implment the level variable correctly
+    int level;
 
     public GameScreen(final Drop gam) {
         this.game = gam;
+        listener = new GameOverInputListener(gam);
 
         // load the images for the droplet and the bucket, 64x64 pixels each
 
@@ -66,6 +71,8 @@ public class GameScreen implements Screen {
 
         points_dropped = 0;
         speed = 1;
+        //initial level is 1
+        level = 1;
 
         spawnRaindrop();
     }
@@ -154,7 +161,23 @@ public class GameScreen implements Screen {
             if (raindrop.getRectangle().y + 64 < 0) {
                 iter.remove();
                 points_dropped++;
-                if(points_dropped >= LOW) game.setScreen(new GameOverScreen(game, dropsGathered));
+                if(points_dropped >= LOW) {
+                    game.getPreferences().putHighScoreAvail(true);
+                    game.getPreferences().putCurLevel(level);
+                    game.getPreferences().putCurScore(dropsGathered);
+                    Gdx.input.getTextInput(new TextInputListener() {
+                        @Override
+                        public void input(String text) {
+                            game.getPreferences().putCurName(text);
+                        }
+
+                        @Override
+                        public void canceled() {
+
+                        }
+                    }, "Score: " + dropsGathered, "Enter Name", "");
+                    game.setScreen(new GameOverScreen(game));
+                }
             }
 
             // if raindrop hits the top of the screen

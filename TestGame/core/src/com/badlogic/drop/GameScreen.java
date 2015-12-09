@@ -248,10 +248,14 @@ public class GameScreen implements Screen {
 
     @Override
     public void pause() {
+        game.getPreferences().putCurStateScore(dropsGathered);
+        game.getPreferences().putCurStateLevel(level);
     }
 
     @Override
     public void resume() {
+        dropsGathered = game.getPreferences().getCurStateScore();
+        level = game.getPreferences().getCurStateLevel();
     }
 
     @Override

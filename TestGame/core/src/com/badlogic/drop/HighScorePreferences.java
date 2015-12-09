@@ -27,6 +27,8 @@ public class HighScorePreferences  {
     private static final String NOT_FOUND = "no name entered";
     private static final String NEW_HIGHSCORE_AVAIL = "newHighScore";
     private static final int DEFAULT_VALUE = 0;
+    private static final String CUR_STATE_SCORE = "statescore";
+    private static final String CUR_STATE_LEVEL = "statelevel";
 
     private Preferences pref;
 
@@ -85,7 +87,7 @@ public class HighScorePreferences  {
         return getPref().getInteger(LEVEL_KEY5, DEFAULT_VALUE);
     }
     public String getCurName () {
-        return getPref().getString(CUR_NAME,NOT_FOUND);
+        return getPref().getString(CUR_NAME, NOT_FOUND);
     }
     public int getCurScore () {
         return getPref().getInteger(CUR_SCORE, DEFAULT_VALUE);
@@ -95,6 +97,12 @@ public class HighScorePreferences  {
     }
     public boolean getNewHighScoreAvail () {
         return getPref().getBoolean(NEW_HIGHSCORE_AVAIL);
+    }
+    public int getCurStateScore () {
+        return getPref().getInteger(CUR_STATE_SCORE, DEFAULT_VALUE);
+    }
+    public int getCurStateLevel () {
+        return getPref().getInteger(CUR_STATE_LEVEL, 1);
     }
 
     public void putName1 (String name) {
@@ -181,6 +189,14 @@ public class HighScorePreferences  {
     }
     public void putHighScoreAvail (boolean available) {
         getPref().putBoolean(NEW_HIGHSCORE_AVAIL,available);
+        getPref().flush();
+    }
+    public void putCurStateScore (int score) {
+        getPref().putInteger(CUR_STATE_SCORE, score);
+        getPref().flush();
+    }
+    public void putCurStateLevel (int level) {
+        getPref().putInteger(CUR_STATE_LEVEL, level);
         getPref().flush();
     }
 

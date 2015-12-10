@@ -26,8 +26,6 @@ public class HighScoreScreen implements Screen {
         camera.setToOrtho(false, 800, 480);
         touchPoint = new Vector3();
         backBounds = new Rectangle(10,425,150,36);
-
-
     }
 
 
@@ -46,7 +44,6 @@ public class HighScoreScreen implements Screen {
 
         game.batch.begin();
         game.font.draw(game.batch, "Back to Main Menu", 25, 450);
-        //TODO: Place the high score list with the database created
         game.font.draw(game.batch, "Top 5 High Scores", 300, 400);
         game.font.draw(game.batch, "Name", 200, 375);
         game.font.draw(game.batch, "Score", 350, 375);
@@ -107,29 +104,6 @@ public class HighScoreScreen implements Screen {
             game.font.draw(game.batch, "" + game.getPreferences().getScore5(), scoreX, y);
             game.font.draw(game.batch, "" + game.getPreferences().getLevel5(), levelX, y);
         }
-
-
-//        DatabaseCursor cursor = null;
-//        String selectHighScore = "SELECT * FROM dbo.ScoreBoard ORDER BY score";
-//        try {
-//
-//            dbHandler.openOrCreateDatabase();
-//            cursor = dbHandler.rawQuery(selectHighScore);
-//
-//        } catch (SQLiteGdxException e) {
-//            e.printStackTrace();
-//        }
-//        while(cursor.next())
-//        {
-//            String name = cursor.getString(2);
-//            String score = cursor.getString(3);
-//            String level = cursor.getString(4);
-//            game.font.draw(game.batch, name, nameX, y);
-//            game.font.draw(game.batch, score, scoreX, y);
-//            game.font.draw(game.batch, level, levelX, y);
-//            y = y - 50;
-//        }
-
 
         ShapeRenderer renderer = new ShapeRenderer();
         renderer.setProjectionMatrix(camera.combined);

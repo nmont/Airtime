@@ -8,8 +8,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 
-import java.awt.Shape;
-
 public class MainMenuScreen implements Screen {
     final Drop game;
     OrthographicCamera camera;
@@ -63,7 +61,6 @@ public class MainMenuScreen implements Screen {
                 game.setScreen(new HighScoreScreen(game));
                 dispose();
             }
-
         }
     }
 

@@ -5,6 +5,7 @@ import java.util.Iterator;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.TextInputListener;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -22,6 +23,7 @@ public class GameScreen implements Screen {
     final int LOW = 1;
     static final int GAME_RUNNING = 1;
     static final int GAME_PAUSED = 2;
+    private Music Music;
 
 
     Texture ball1;
@@ -64,6 +66,10 @@ public class GameScreen implements Screen {
         ball1 = new Texture(Gdx.files.internal("ball.png"));
         ball2 = new Texture(Gdx.files.internal("ball2.png"));
         ball3 = new Texture(Gdx.files.internal("ball3.png"));
+        Music = Gdx.audio.newMusic(Gdx.files.internal("lucky.mp3"));
+
+        Music.setLooping(true);
+        Music.play();
 
         // load the drop sound effect and the rain background "music"
         hitSound = Gdx.audio.newSound(Gdx.files.internal("blip.mp3"));
@@ -216,6 +222,7 @@ public class GameScreen implements Screen {
             cursor.x = x_loc;
             cursor.y = y_loc;
             if (pauseBounds.contains(touchPos.x, touchPos.y)) {
+                Music.pause();
                 state = GAME_PAUSED;
             }
         } else {
@@ -253,6 +260,7 @@ public class GameScreen implements Screen {
                 points_dropped++;
 
                 if (points_dropped >= LOW) {
+                    Music.dispose();
                     gameOverSound.play();
                     game.getPreferences().putHighScoreAvail(true);
                     game.getPreferences().putCurLevel(level);
@@ -315,6 +323,7 @@ public class GameScreen implements Screen {
             camera.unproject(touchPoint.set(Gdx.input.getX(), Gdx.input.getY(), 0));
 
             if (resumeBounds.contains(touchPoint.x, touchPoint.y)) {
+                Music.play();
                 state = GAME_RUNNING;
                 return;
             }
@@ -328,6 +337,7 @@ public class GameScreen implements Screen {
                 game.getPreferences().putCurStateScore(BallsGathers);
 //                Gdx.app.getPreferences("Game Preferences").flush();
                 game.getPreferences().putCurStateLevel(level);
+                Music.stop();
 
                 game.setScreen(new MainMenuScreen(game));
                 return;
@@ -366,7 +376,6 @@ public class GameScreen implements Screen {
     public void dispose() {
         ball1.dispose();
         hitSound.dispose();
-//        rainMusic.dispose();
     }
 
 }

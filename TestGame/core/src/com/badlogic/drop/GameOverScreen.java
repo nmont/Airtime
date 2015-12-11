@@ -9,12 +9,12 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 
 public class GameOverScreen implements Screen {
-    final Drop game;
+    final Airtime game;
     OrthographicCamera camera;
     Vector3 touchPoint;
     Rectangle backBounds;
 
-    public GameOverScreen(final Drop gam) {
+    public GameOverScreen(final Airtime gam) {
         game = gam;
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 800, 480);

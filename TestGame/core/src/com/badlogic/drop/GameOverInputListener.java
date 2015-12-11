@@ -1,8 +1,6 @@
 package com.badlogic.drop;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.Preferences;
 //import com.badlogic.gdx.sql.Database;
 //import com.badlogic.gdx.sql.DatabaseCursor;
 //import com.badlogic.gdx.sql.DatabaseFactory;
@@ -15,7 +13,7 @@ import com.badlogic.gdx.Preferences;
 public class GameOverInputListener implements Input.TextInputListener {
     private int score;
     private int level;
-    final Drop game;
+    final Airtime game;
     private String inputString;
 //    Database databaseHandler;
 //    public static final String TABLE_SCOREBOARD = "ScoreBoard";
@@ -33,7 +31,7 @@ public class GameOverInputListener implements Input.TextInputListener {
 //            + " text not null, " + COLUMN_SCORE + " text not null, "
 //            + COLUMN_LEVEL + " text not null);";
 
-    public GameOverInputListener (final Drop gam)
+    public GameOverInputListener (final Airtime gam)
     {
 //        score = scor;
 //        level = lev;

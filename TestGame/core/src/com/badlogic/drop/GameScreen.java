@@ -18,13 +18,11 @@ import com.badlogic.gdx.utils.TimeUtils;
 
 
 public class GameScreen implements Screen {
-    final Drop game;
+    final Airtime game;
     final int LOW = 1;
-    static final int GAME_READY = 0;
     static final int GAME_RUNNING = 1;
     static final int GAME_PAUSED = 2;
-    static final int GAME_LEVEL_END = 3;
-    static final int GAME_OVER = 4;
+
 
     Texture ball1;
     Texture ball2;
@@ -33,14 +31,14 @@ public class GameScreen implements Screen {
     Sound gameOverSound;
 
     OrthographicCamera camera;
-    Rectangle bucket;
+    Rectangle cursor;
     Rectangle pauseBounds;
     Rectangle resumeBounds;
     Rectangle saveExitBounds;
 
-    Array<Raindrop> raindrops;
+    Array<Ball> balls;
     long lastDropTime;
-    int dropsGathered;
+    int BallsGathers;
     int points_dropped;
     int speed;
     int timer;
@@ -54,7 +52,7 @@ public class GameScreen implements Screen {
     boolean is_touched;
     Vector3 touchPoint;
 
-    public GameScreen(final Drop gam) {
+    public GameScreen(final Airtime gam) {
         this.game = gam;
         state = GAME_RUNNING;
 
@@ -77,16 +75,16 @@ public class GameScreen implements Screen {
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 800, 480);
 
-        // create a Rectangle to logically represent the bucket
-        bucket = new Rectangle();
-        bucket.x = 800 / 2 - 64 / 2; // center the bucket horizontally
-        bucket.y = 20; // bottom left corner of the bucket is 20 pixels above
+        // create a Rectangle to logically represent the cursor
+        cursor = new Rectangle();
+        cursor.x = 800 / 2 - 64 / 2; // center the cursor horizontally
+        cursor.y = 20; // bottom left corner of the cursor is 20 pixels above
         // the bottom screen edge
-        bucket.width = 64;
-        bucket.height = 64;
+        cursor.width = 64;
+        cursor.height = 64;
 
-        // create the raindrops array and spawn the first raindrop
-        raindrops = new Array<Raindrop>();
+        // create the balls array and spawn the first balls
+        balls = new Array<Ball>();
 
         points_dropped = 0;
         speed = 1;
@@ -102,9 +100,9 @@ public class GameScreen implements Screen {
         status = game.getPreferences().getSavedState();
         //Gdx.app.getPreferences("Game Preferences").getString("SAVED_STATE", "NULL");
         if(status.compareTo("SAVED") == 0) {
-            dropsGathered = game.getPreferences().getCurStateScore();
+            BallsGathers = game.getPreferences().getCurStateScore();
             level = game.getPreferences().getCurStateLevel();
-//            dropsGathered = Gdx.app.getPreferences("Game Preferences").getInteger("SAVED_SCORE", 0);
+//            BallsGathers = Gdx.app.getPreferences("Game Preferences").getInteger("SAVED_SCORE", 0);
             game.getPreferences().putSavedState("NOT_SAVED");
 //            Gdx.app.getPreferences("Game Preferences").putString("SAVED_STATE", "NOT_SAVED");
             game.getPreferences().putCurStateScore(0);
@@ -114,24 +112,24 @@ public class GameScreen implements Screen {
 
         else
         {
-            dropsGathered = 0;
+            BallsGathers = 0;
             level = 1;
         }
 
-        spawnRaindrop();
+        spawnBall();
     }
 
-    private void spawnRaindrop() {
-        Rectangle raindrop = new Rectangle();
+    private void spawnBall() {
+        Rectangle ball_rectangle = new Rectangle();
         boolean isHit = false;
-        raindrop.x = MathUtils.random(0, 800 - 64);
-        raindrop.y = 480;
-        raindrop.width = 64;
-        raindrop.height = 64;
+        ball_rectangle.x = MathUtils.random(0, 800 - 64);
+        ball_rectangle.y = 480;
+        ball_rectangle.width = 64;
+        ball_rectangle.height = 64;
 
-        //Make Raindrop object
-        Raindrop r = new Raindrop(raindrop, isHit);
-        raindrops.add(r);
+        //Make Ball object
+        Ball r = new Ball(ball_rectangle, isHit);
+        balls.add(r);
         lastDropTime = TimeUtils.nanoTime();
     }
 
@@ -186,17 +184,17 @@ public class GameScreen implements Screen {
         // coordinate system specified by the camera.
         game.batch.setProjectionMatrix(camera.combined);
 
-        // begin a new batch and draw the bucket and
+        // begin a new batch and draw the cursor and
         // all drops
         game.batch.begin();
-        game.font.draw(game.batch, "Score: " + dropsGathered, 200, 480);
+        game.font.draw(game.batch, "Score: " + BallsGathers, 200, 480);
         game.font.draw(game.batch, "Pause", 25, 450);
-        for (Raindrop raindrop : raindrops) {
-            if (raindrop.getTimesHit() == 0)
-                game.batch.draw(ball1, raindrop.getRectangle().x, raindrop.getRectangle().y);
-            else if (raindrop.getTimesHit() == 1)
-                game.batch.draw(ball2, raindrop.getRectangle().x, raindrop.getRectangle().y);
-            else game.batch.draw(ball3, raindrop.getRectangle().x, raindrop.getRectangle().y);
+        for (Ball ball : balls) {
+            if (ball.getTimesHit() == 0)
+                game.batch.draw(ball1, ball.getRectangle().x, ball.getRectangle().y);
+            else if (ball.getTimesHit() == 1)
+                game.batch.draw(ball2, ball.getRectangle().x, ball.getRectangle().y);
+            else game.batch.draw(ball3, ball.getRectangle().x, ball.getRectangle().y);
         }
 
         ShapeRenderer renderer = new ShapeRenderer();
@@ -215,42 +213,42 @@ public class GameScreen implements Screen {
             is_touched = true;
             x_loc = touchPos.x - 64 / 2;
             y_loc = touchPos.y - 64 / 2;
-            bucket.x = x_loc;
-            bucket.y = y_loc;
+            cursor.x = x_loc;
+            cursor.y = y_loc;
             if (pauseBounds.contains(touchPos.x, touchPos.y)) {
                 state = GAME_PAUSED;
             }
         } else {
             is_touched = false;
         }
-        if (bucket.x < 0)
-            bucket.x = 0;
-        if (bucket.x > 800 - 64)
-            bucket.x = 800 - 64;
-        // check if we need to create a new raindrop
+        if (cursor.x < 0)
+            cursor.x = 0;
+        if (cursor.x > 800 - 64)
+            cursor.x = 800 - 64;
+        // check if we need to create a new ball
         if (TimeUtils.nanoTime() - lastDropTime > 1000000000) {
             timer++;
         }
         if ((timer >= 30 / level) || (level > 10)) {
-            spawnRaindrop();
+            spawnBall();
             timer = 0;
         }
 
-        // move the raindrops, remove any that are beneath the bottom edge of
-        // the screen or that hit the bucket. In the later case we play back
+        // move the balls, remove any that are beneath the bottom edge of
+        // the screen or that hit the cursor. In the later case we play back
         // a sound effect as well.
-        Iterator<Raindrop> iter = raindrops.iterator();
+        Iterator<Ball> iter = balls.iterator();
         while (iter.hasNext()) {
-            Raindrop raindrop = iter.next();
-            raindrop.update();
-            // Move raindrop down if not hit
-            if (!raindrop.isHit)
-                raindrop.getRectangle().y -= speed * Gdx.graphics.getDeltaTime() - raindrop.getVelocity();
+            Ball ball = iter.next();
+            ball.update();
+            // Move ball down if not hit
+            if (!ball.isHit)
+                ball.getRectangle().y -= speed * Gdx.graphics.getDeltaTime() - ball.getVelocity();
             else
-                raindrop.getRectangle().y += speed * Gdx.graphics.getDeltaTime() + raindrop.getVelocity();
+                ball.getRectangle().y += speed * Gdx.graphics.getDeltaTime() + ball.getVelocity();
 
-            // if raindrop gets to bottom of screen
-            if (raindrop.getRectangle().y + 64 < 0) {
+            // if ball gets to bottom of screen
+            if (ball.getRectangle().y + 64 < 0) {
                 iter.remove();
                 points_dropped++;
 
@@ -258,7 +256,7 @@ public class GameScreen implements Screen {
                     gameOverSound.play();
                     game.getPreferences().putHighScoreAvail(true);
                     game.getPreferences().putCurLevel(level);
-                    game.getPreferences().putCurScore(dropsGathered);
+                    game.getPreferences().putCurScore(BallsGathers);
                     Gdx.input.getTextInput(new TextInputListener() {
                         @Override
                         public void input(String text) {
@@ -269,26 +267,26 @@ public class GameScreen implements Screen {
                         public void canceled() {
 
                         }
-                    }, "Score: " + dropsGathered, "Enter Name", "");
+                    }, "Score: " + BallsGathers, "Enter Name", "");
                     game.setScreen(new GameOverScreen(game));
                 }
 
             }
 
-            // if raindrop hits the top of the screen
-            if ((raindrop.getRectangle().y - 64 > 480) && (raindrop.isHit)) {
-                raindrop.setIsHit(false);
+            // if ball hits the top of the screen
+            if ((ball.getRectangle().y - 64 > 480) && (ball.isHit)) {
+                ball.setIsHit(false);
             }
 
-            if (is_touched && raindrop.getRectangle().overlaps(bucket) && raindrop.getIsHittable()) {
-                if (raindrop.getTimesHit() >= 2) iter.remove();
-                dropsGathered++;
-                if (dropsGathered % 10 == 0) level++;
-                raindrop.setIsHit(true);
+            if (is_touched && ball.getRectangle().overlaps(cursor) && ball.getIsHittable()) {
+                if (ball.getTimesHit() >= 2) iter.remove();
+                BallsGathers++;
+                if (BallsGathers % 10 == 0) level++;
+                ball.setIsHit(true);
                 hitSound.play();
             }
 
-            speed = (1 * dropsGathered) + 100;
+            speed = (1 * BallsGathers) + 100;
         }
     }
 
@@ -326,8 +324,8 @@ public class GameScreen implements Screen {
                 game.getPreferences().putSavedState("SAVED");
 //                Gdx.app.getPreferences("Game Preferences").flush();
 
-//                Gdx.app.getPreferences("Game Preferences").putInteger("SAVED_SCORE", dropsGathered);
-                game.getPreferences().putCurStateScore(dropsGathered);
+//                Gdx.app.getPreferences("Game Preferences").putInteger("SAVED_SCORE", BallsGathers);
+                game.getPreferences().putCurStateScore(BallsGathers);
 //                Gdx.app.getPreferences("Game Preferences").flush();
                 game.getPreferences().putCurStateLevel(level);
 
@@ -354,13 +352,13 @@ public class GameScreen implements Screen {
 
     @Override
     public void pause() {
-        game.getPreferences().putCurStateScore(dropsGathered);
+        game.getPreferences().putCurStateScore(BallsGathers);
         game.getPreferences().putCurStateLevel(level);
     }
 
     @Override
     public void resume() {
-        dropsGathered = game.getPreferences().getCurStateScore();
+        BallsGathers = game.getPreferences().getCurStateScore();
         level = game.getPreferences().getCurStateLevel();
     }
 

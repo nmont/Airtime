@@ -9,13 +9,13 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 
 public class MainMenuScreen implements Screen {
-    final Drop game;
+    final Airtime game;
     OrthographicCamera camera;
     Rectangle playBounds;
     Vector3 touchPoint;
     Rectangle highScoreBounds;
 
-    public MainMenuScreen(final Drop gam) {
+    public MainMenuScreen(final Airtime gam) {
         game = gam;
 
         camera = new OrthographicCamera();

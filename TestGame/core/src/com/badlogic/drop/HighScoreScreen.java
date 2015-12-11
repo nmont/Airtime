@@ -13,14 +13,14 @@ import com.badlogic.gdx.math.Vector3;
 //import com.badlogic.gdx.sql.SQLiteGdxException;
 
 public class HighScoreScreen implements Screen {
-    final Drop game;
+    final Airtime game;
     OrthographicCamera camera;
     Vector3 touchPoint;
     Rectangle backBounds;
     private static final String NOT_FOUND = "no name entered";
 
 
-    public HighScoreScreen (final Drop gam){
+    public HighScoreScreen (final Airtime gam){
         game = gam;
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 800, 480);

@@ -4,8 +4,7 @@ import android.os.Bundle;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
-import com.badlogic.drop.Drop;
-import android.database.sqlite.SQLiteDatabase;
+import com.badlogic.drop.Airtime;
 
 public class AndroidLauncher extends AndroidApplication {
 	@Override
@@ -14,6 +13,6 @@ public class AndroidLauncher extends AndroidApplication {
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
 		config.useAccelerometer = false;
 		config.useCompass = false;
-		initialize(new Drop(), config);
+		initialize(new Airtime(), config);
 	}
 }

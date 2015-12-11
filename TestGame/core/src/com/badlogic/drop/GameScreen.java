@@ -92,22 +92,31 @@ public class GameScreen implements Screen {
         speed = 1;
 
         timer = 0;
-        level = 1;
+//        level = 1;
 
         x_loc = 0;
         y_loc = 0;
         is_touched = false;
         touchPoint = new Vector3();
 
-        status = Gdx.app.getPreferences("Game Preferences").getString("SAVED_STATE", "NULL");
+        status = game.getPreferences().getSavedState();
+        //Gdx.app.getPreferences("Game Preferences").getString("SAVED_STATE", "NULL");
         if(status.compareTo("SAVED") == 0) {
-            dropsGathered = Gdx.app.getPreferences("Game Preferences").getInteger("SAVED_SCORE", 0);
-            Gdx.app.getPreferences("Game Preferences").putString("SAVED_STATE", "NOT_SAVED");
-            Gdx.app.getPreferences("Game Preferences").putInteger("SAVED_SCORE", 0);
-            Gdx.app.getPreferences("Game Preferences").flush();
+            dropsGathered = game.getPreferences().getCurStateScore();
+            level = game.getPreferences().getCurStateLevel();
+//            dropsGathered = Gdx.app.getPreferences("Game Preferences").getInteger("SAVED_SCORE", 0);
+            game.getPreferences().putSavedState("NOT_SAVED");
+//            Gdx.app.getPreferences("Game Preferences").putString("SAVED_STATE", "NOT_SAVED");
+            game.getPreferences().putCurStateScore(0);
+//            Gdx.app.getPreferences("Game Preferences").putInteger("SAVED_SCORE", 0);
+//            Gdx.app.getPreferences("Game Preferences").flush();
         }
 
-        else dropsGathered = 0;
+        else
+        {
+            dropsGathered = 0;
+            level = 1;
+        }
 
         spawnRaindrop();
     }
@@ -313,11 +322,14 @@ public class GameScreen implements Screen {
             }
 
             if (saveExitBounds.contains(touchPoint.x, touchPoint.y)) {
-                Gdx.app.getPreferences("Game Preferences").putString("SAVED_STATE", "SAVED");
-                Gdx.app.getPreferences("Game Preferences").flush();
+//                Gdx.app.getPreferences("Game Preferences").putString("SAVED_STATE", "SAVED");
+                game.getPreferences().putSavedState("SAVED");
+//                Gdx.app.getPreferences("Game Preferences").flush();
 
-                Gdx.app.getPreferences("Game Preferences").putInteger("SAVED_SCORE", dropsGathered);
-                Gdx.app.getPreferences("Game Preferences").flush();
+//                Gdx.app.getPreferences("Game Preferences").putInteger("SAVED_SCORE", dropsGathered);
+                game.getPreferences().putCurStateScore(dropsGathered);
+//                Gdx.app.getPreferences("Game Preferences").flush();
+                game.getPreferences().putCurStateLevel(level);
 
                 game.setScreen(new MainMenuScreen(game));
                 return;

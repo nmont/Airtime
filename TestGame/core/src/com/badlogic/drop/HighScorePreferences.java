@@ -29,6 +29,8 @@ public class HighScorePreferences  {
     private static final int DEFAULT_VALUE = 0;
     private static final String CUR_STATE_SCORE = "statescore";
     private static final String CUR_STATE_LEVEL = "statelevel";
+    private static final String SAVED_STATE = "saved_state";
+    private static final String NULL_STRING = "NULL";
 
     private Preferences pref;
 
@@ -103,6 +105,9 @@ public class HighScorePreferences  {
     }
     public int getCurStateLevel () {
         return getPref().getInteger(CUR_STATE_LEVEL, 1);
+    }
+    public String getSavedState () {
+        return getPref().getString(SAVED_STATE, NULL_STRING);
     }
 
     public void putName1 (String name) {
@@ -197,6 +202,10 @@ public class HighScorePreferences  {
     }
     public void putCurStateLevel (int level) {
         getPref().putInteger(CUR_STATE_LEVEL, level);
+        getPref().flush();
+    }
+    public void putSavedState (String state) {
+        getPref().putString(SAVED_STATE, state);
         getPref().flush();
     }
 
